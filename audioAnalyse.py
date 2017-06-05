@@ -3,6 +3,7 @@ import wave
 import pyaudio
 import numpy
 import os
+import json
 
 AUDIOFILE="raw/a5m.wav"
 
@@ -23,6 +24,18 @@ class audioAnalyse():
         wave_data=numpy.fromstring(self.str_data,dtype=numpy.short)
         wave_data.shape=-1,2
         self.wave_data=wave_data.T
+        time = int(4 * self.nframes / self.framerate)
+        N=int(self.framerate/4)
+        y = []
+        for i in range(time):
+            wave_data2 = self.wave_data[0][N * i:N * (i + 1)]
+            # c = numpy.fft.fft(wave_data2) * 2 / N
+            if wave_data2.__len__() != 0:
+                y.append(max(abs(wave_data2)))
+            else:
+                y.append(0)
+        self.freqs=y
+        self.timeline=range(time)
 
     def graph(self):
         time=numpy.arange(0,self.nframes)*(1.0/self.framerate)
@@ -46,22 +59,7 @@ class audioAnalyse():
         pylab.show()
 
     def graph3(self):
-        time=int(4*self.nframes/self.framerate)
-        N=11025
-        df = self.framerate / (4*(N - 1))
-        freq = [df * n for n in range(0, N)]
-        x=[]
-        y=[]
-        for i in range(time):
-            wave_data2 = self.wave_data[0][N * i:N * (i + 1)]
-            #c = numpy.fft.fft(wave_data2) * 2 / N
-            if wave_data2.__len__()!=0:
-                y.append(max(abs(wave_data2)))
-            else:
-                y.append(0)
-            x.append(i)
-        pylab.plot(x,y)
-        return max(y)
+        pylab.plot(self.timeline,self.freqs)
         #pylab.show()
 
 def getFreq():
@@ -69,8 +67,10 @@ def getFreq():
     res = {}
     for f in files:
         au = audioAnalyse("raw/" + f)
-        res[f.split(".")[0]] = au.graph3()
-    print(res)
+        res[f.split(".")[0]] = max(au.freqs)
+    with open("raw_freq.txt",'w') as f:
+        for k,v in res.items():
+            f.write(str(k)+":"+str(v)+"\n")
 
 if __name__=="__main__":
     getFreq()
