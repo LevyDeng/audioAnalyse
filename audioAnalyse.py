@@ -10,6 +10,7 @@ AUDIOFILE="raw/a5m.wav"
 class audioAnalyse():
 
     def __init__(self,file):
+        self.filename=file.split("\/")[-1]
         wf=wave.open(file,"rb")
         p=pyaudio.PyAudio()
         stream=p.open(format=p.get_format_from_width(wf.getsampwidth()),\
@@ -24,14 +25,15 @@ class audioAnalyse():
         wave_data=numpy.fromstring(self.str_data,dtype=numpy.short)
         wave_data.shape=-1,2
         self.wave_data=wave_data.T
-        time = int(4 * self.nframes / self.framerate)
-        N=int(self.framerate/4)
+        self.c=numpy.fft.fft(self.wave_data[0])
+        time = int( self.nframes / self.framerate)
+        N=int(self.framerate)
         y = []
         for i in range(time):
             wave_data2 = self.wave_data[0][N * i:N * (i + 1)]
-            # c = numpy.fft.fft(wave_data2) * 2 / N
+            c = numpy.fft.fft(wave_data2) * 2 / N
             if wave_data2.__len__() != 0:
-                y.append(max(abs(wave_data2)))
+                y.append(max(abs(c)))
             else:
                 y.append(0)
         self.freqs=y
@@ -62,17 +64,33 @@ class audioAnalyse():
         pylab.plot(self.timeline,self.freqs)
         #pylab.show()
 
+    def graph4(self):
+        l=sorted(list(abs(self.wave_data[0])))
+        x=range(1,20)
+        y=l[-19:]
+        pylab.plot(x,y)
+        pylab.title(self.filename.split(".")[0])
+        pylab.savefig(self.filename.split(".")[0])
+
 def getFreq():
     files = os.listdir("raw")
     res = {}
     for f in files:
         au = audioAnalyse("raw/" + f)
-        res[f.split(".")[0]] = max(au.freqs)
+        l=list(abs(au.c))
+        print(f.split(".")[0]+":")
+        print(sorted(l)[-5:])
+        res[f.split(".")[0]] = sorted(l)[-10]
     with open("raw_freq.txt",'w') as f:
         for k,v in res.items():
             f.write(str(k)+":"+str(v)+"\n")
 
 if __name__=="__main__":
+    #au=audioAnalyse("raw/a1.wav")
+    #au.graph3()
     getFreq()
+    #for f in os.listdir("raw"):
+    #    au=audioAnalyse("raw/"+f)
+    #    au.graph4()
 
 
