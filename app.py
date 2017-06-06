@@ -21,11 +21,9 @@ class soundButton(Button):
     filename= StringProperty(None)
     sound= ObjectProperty(None,allownone=True)
 
-    def on_press(self,touch):
-        pygame.init()
-        pygame.mixer.init()
-        pygame.mixer.music.load(self.filename)
-        pygame.mixer.music.play()
+    def on_press(self):
+        self.sound=SoundLoader.load(self.filename)
+        self.sound.play()
 
 class Keys(GridLayout):
     def __init__(self,**kwargs):
