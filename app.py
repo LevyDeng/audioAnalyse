@@ -21,7 +21,7 @@ class soundButton(Button):
     filename= StringProperty(None)
     sound= ObjectProperty(None,allownone=True)
 
-    def on_press(self):
+    def on_press(self,touch):
         self.sound=SoundLoader.load(self.filename)
         self.sound.play()
 
