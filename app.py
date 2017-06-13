@@ -1,13 +1,12 @@
 import kivy
-kivy.require('1.10.0') # replace with your current kivy version !
+kivy.require('1.9.0') # replace with your current kivy version !
 
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.core.audio import SoundLoader
-import os
-import pygame
+from time import sleep
 
 PIANOKEY=('a0','a0m','b0','c1','c1m','d1','d1m','e1','f1','f1m','g1','g1m','a1','a1m','b1', \
           'c2', 'c2m', 'd2', 'd2m', 'e2', 'f2', 'f2m', 'g2', 'g2m','a2','a2m','b2', \
@@ -21,9 +20,40 @@ class soundButton(Button):
     filename= StringProperty(None)
     sound= ObjectProperty(None,allownone=True)
 
-    def on_press(self,touch):
+    def on_press(self):
         self.sound=SoundLoader.load(self.filename)
         self.sound.play()
+
+class startButton(Button):
+    keyname=StringProperty(None)
+    sound = ObjectProperty(None, allownone=True)
+    status=0
+    def on_press(self):
+        if self.status==0:
+            self.status=1
+            self.start()
+        else:
+            self.status=0
+            self.stop()
+
+    def start(self):
+        with open("audio/V_freqs.txt") as f:
+            for l in f:
+                if l.strip()!='0' and l.strip()!=self.keyname:
+                    self.keyname==l.strip()
+                    self.sound=SoundLoader.load("raw_ogg/"+l.strip()+".ogg")
+                    self.sound.play()
+                    sleep(0.25)
+                elif l.strip()==self.keyname:
+                    sleep(0.25)
+                else:
+                    sleep(0.25)
+
+    def stop(self):
+        self.sound.stop()
+        self.sound.unload()
+        self.sound = None
+
 
 class Keys(GridLayout):
     def __init__(self,**kwargs):
@@ -32,6 +62,7 @@ class Keys(GridLayout):
         for k in PIANOKEY:
             btn=soundButton(text=k,filename="raw_ogg/"+k+".ogg",halign='center')
             self.add_widget(btn)
+        self.add_widget(startButton())
 
 class MyApp(App):
     def build(self):
