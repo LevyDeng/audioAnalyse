@@ -8,6 +8,7 @@ from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.core.audio import SoundLoader
 from time import sleep
 
+SLEEPTIME=0.5
 PIANOKEY=('a0','a0m','b0','c1','c1m','d1','d1m','e1','f1','f1m','g1','g1m','a1','a1m','b1', \
           'c2', 'c2m', 'd2', 'd2m', 'e2', 'f2', 'f2m', 'g2', 'g2m','a2','a2m','b2', \
           'c3', 'c3m', 'd3', 'd3m', 'e3', 'f3', 'f3m', 'g3', 'g3m', 'a3', 'a3m', 'b3', \
@@ -25,7 +26,7 @@ class soundButton(Button):
         self.sound.play()
 
 class startButton(Button):
-    keyname=StringProperty(None)
+    keyname=''
     sound = ObjectProperty(None, allownone=True)
     status=0
     def on_press(self):
@@ -37,17 +38,17 @@ class startButton(Button):
             self.stop()
 
     def start(self):
-        with open("audio/V_freqs.txt") as f:
+        with open("audio/Hoaprox_freqs.txt") as f:
             for l in f:
                 if l.strip()!='0' and l.strip()!=self.keyname:
                     self.keyname==l.strip()
                     self.sound=SoundLoader.load("raw_ogg/"+l.strip()+".ogg")
                     self.sound.play()
-                    sleep(0.25)
+                    sleep(SLEEPTIME)
                 elif l.strip()==self.keyname:
-                    sleep(0.25)
+                    sleep(SLEEPTIME)
                 else:
-                    sleep(0.25)
+                    sleep(SLEEPTIME)
 
     def stop(self):
         self.sound.stop()
